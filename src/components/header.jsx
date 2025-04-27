@@ -1,6 +1,5 @@
 import React from 'react'
 import UserData from './userData'
-import './header.css'
 
 
 export default function Header() {
