@@ -6,11 +6,14 @@ import Home from './pages/home';
 import Login from './pages/login';
 import SignUp from './pages/signUp'; // Ensure this file exists
 import AdminPage from './pages/adminPage';
+import TestPage from './pages/testPage';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <BrowserRouter>
       {/* <Header /> */}
+      <Toaster position="top-center"/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -18,6 +21,7 @@ function App() {
         <Route path="/products" element={<ProductCard />} /> {/* Consider using a ProductsPage */}
         <Route path="/admin/*" element={<AdminPage />} />
         <Route path="/*" element={<h1>404 Not Found</h1>} /> {/* Catch-all route for 404 */}
+        <Route path="/test" element={<TestPage />} /> {/* Test route */}
       </Routes>
     </BrowserRouter>
   );
