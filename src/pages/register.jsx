@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
-import toast from 'react-hot-toast';
+
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -11,24 +12,57 @@ export default function RegisterPage() {
   const navigate = useNavigate();
 
   async function handleRegister() {
+    // Input validation
+    if (!firstName || !lastName || !email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Password strength validation
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+
     try {
-      const response = await axios.post(import.meta.env.VITE_BACKEND_URL + '/api/users', {
-        email,
-        firstName,
-        lastName,
-        password,
-      });
+      const response = await axios.post(
+        import.meta.env.VITE_BACKEND_URL + '/api/users/register',
+        {
+          email,
+          firstName,
+          lastName,
+          password,
+        },
+        {
+          headers: {
+            // Explicitly ensure no Authorization header is sent for registration
+            Authorization: undefined,
+          },
+        }
+      );
       console.log(response.data);
       toast.success('Registration successful!');
       navigate('/login');
     } catch (error) {
       console.log(error.response?.data || error.message);
-      toast.error(error.response?.data?.message || 'Registration failed');
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      if (errorMessage.includes("User already exists")) {
+        toast.error("Email already registered. Please log in.");
+      } else {
+        toast.error(errorMessage);
+      }
     }
   }
 
   return (
-    <div className="w-full h-screen bg-[url('login.jpg')] bg-center bg-cover flex items-center justify-center">
+    <div className="w-full h-screen bg-[url('/login.jpg')] bg-center bg-cover flex items-center justify-center">
       <div className="w-[50%] h-full"></div>
 
       <div className="w-[50%] h-full flex justify-center items-center">

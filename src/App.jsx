@@ -1,29 +1,56 @@
-
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Header from './components/header';
-import ProductCard from './components/productCard';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './pages/home';
 import Login from './pages/login';
-import SignUp from './pages/register'; // Ensure this file exists
-import AdminPage from './pages/adminPage';
-import TestPage from './pages/testPage';
-import { Toaster } from 'react-hot-toast';
+import AdminHomePage from './pages/adminPage';
+import { ToastContainer } from 'react-toastify';
 import RegisterPage from './pages/register';
+import ProductPage from './client/productPage';
+import Header from './components/header'; // Assuming you might have a Footer component too
+// import Footer from './components/Footer'; // Uncomment if you have a Footer
+import 'react-toastify/dist/ReactToastify.css';
 
-function App() {
+// This component will contain the conditional logic for Header/Footer
+function AppLayout() {
+  const location = useLocation(); // Get the current location object
+  const isAdminPage = location.pathname.startsWith('/admin'); // Check if the path starts with /admin
+
   return (
-    <BrowserRouter>
-      {/* <Header /> */}
-      <Toaster position="top-center"/>
+    <>
+      {!isAdminPage && <Header />} {/* Only show Header if not an admin page */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/products" element={<ProductCard />} /> {/* Consider using a ProductsPage */}
-        <Route path="/admin/*" element={<AdminPage />} />
-        <Route path="/*" element={<h1>404 Not Found</h1>} /> {/* Catch-all route for 404 */}
-        <Route path="/test" element={<TestPage />} /> {/* Test route */}
+        <Route path="/products" element={<ProductPage />} />
+        {/* 
+          For admin pages, AdminHomePage itself might have its own internal routing 
+          if you use nested routes within it. The /admin/* path ensures this component
+          handles all sub-paths of /admin.
+        */}
+        <Route path="/admin/*" element={<AdminHomePage />} />
+        <Route path="/*" element={<Home />} /> {/* Catch-all, consider a 404 page */}
       </Routes>
+      {/* {!isAdminPage && <Footer />} // Uncomment and use if you have a Footer component */}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppLayout /> {/* Render the AppLayout which handles conditional rendering */}
     </BrowserRouter>
   );
 }
