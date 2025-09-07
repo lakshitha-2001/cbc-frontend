@@ -1,25 +1,23 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
-    host: true, // Listen on all addresses
-    port: 4173, // Railway uses this port
-    allowedHosts: [
-      'cbc-frontend-production.up.railway.app',
-      'localhost',
-      '127.0.0.1'
-    ]
+    host: true,
+    port: 4173
   },
   preview: {
     host: true,
     port: 4173,
-    allowedHosts: [
-      'cbc-frontend-production.up.railway.app',
-      'localhost', 
-      '127.0.0.1'
-    ]
+    allowedHosts: true
+  },
+  base: '/', // or './' for relative paths
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false
   }
 })
