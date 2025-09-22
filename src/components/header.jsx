@@ -7,7 +7,6 @@ import { toast } from "react-toastify"
 import { getCartItemCount } from "../utils/cartFunction "
 import { getWishlistItemCount } from "../utils/wishlistFunctions"
 
-
 export default function Header() {
   const [isSliderOpen, setIsSliderOpen] = useState(false)
   const [showUserDropdown, setShowUserDropdown] = useState(false)
@@ -107,7 +106,7 @@ export default function Header() {
     }
   }
 
-  // WishlistIcon component moved here temporarily to fix the styling issue
+  // WishlistIcon component
   const WishlistIcon = () => {
     return (
       <Link to="/wishlist" className="relative group">
@@ -124,6 +123,28 @@ export default function Header() {
         <span className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 whitespace-nowrap border border-red-600 bg-white px-3 py-2 text-sm text-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-200 cursor-text shadow-lg"
           style={{ zIndex: 100 }}>
           My Wishlist
+        </span>
+      </Link>
+    )
+  }
+
+  // CartIcon component
+  const CartIcon = () => {
+    return (
+      <Link to="/cart" className="relative group">
+        <button className="p-3 text-black cursor-pointer">
+          <div className="relative">
+            <ShoppingCart className="h-6 w-6" />
+          </div>
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-800 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
+              {cartCount}
+            </span>
+          )}
+        </button>
+        <span className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 whitespace-nowrap border border-red-600 bg-white px-3 py-2 text-sm text-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-200 cursor-text shadow-lg"
+          style={{ zIndex: 100 }}>
+          My Cart
         </span>
       </Link>
     )
@@ -168,6 +189,33 @@ export default function Header() {
               >
                 Contact
               </Link>
+              
+              {/* Mobile Wishlist and Cart in the menu */}
+              <div className="flex justify-around border-t border-red-600 pt-4">
+                <Link to="/wishlist" className="flex flex-col items-center text-red-100 hover:text-white" onClick={toggleSlider}>
+                  <div className="relative">
+                    <Heart className="h-6 w-6" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-800 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-sm mt-1">Wishlist</span>
+                </Link>
+                <Link to="/cart" className="flex flex-col items-center text-red-100 hover:text-white" onClick={toggleSlider}>
+                  <div className="relative">
+                    <ShoppingCart className="h-6 w-6" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-800 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                        {cartCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-sm mt-1">Cart</span>
+                </Link>
+              </div>
+              
               {user ? (
                 <div className="flex flex-col gap-4 pt-4 border-t border-red-600">
                   <div className="text-sm text-red-200">Welcome back,</div>
@@ -176,7 +224,10 @@ export default function Header() {
                     {user.name}
                   </div>
                   <button
-                    onClick={handleSignOut}
+                    onClick={() => {
+                      handleSignOut()
+                      toggleSlider() // Close slider after sign out
+                    }}
                     className="flex items-center gap-2 px-4 py-2 border border-red-500 text-red-300 hover:bg-red-800 rounded-md transition-colors"
                   >
                     <LogOut className="h-4 w-4" />
@@ -186,12 +237,18 @@ export default function Header() {
               ) : (
                 <div className="flex flex-col gap-3 pt-4 border-t border-red-600">
                   <Link to="/login">
-                    <button className="w-full px-4 py-2 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white rounded-md transition-all border border-red-500">
+                    <button 
+                      onClick={toggleSlider} // Add this line
+                      className="w-full px-4 py-2 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white rounded-md transition-all border border-red-500"
+                    >
                       Sign In
                     </button>
                   </Link>
                   <Link to="/register">
-                    <button className="w-full px-4 py-2 border border-red-500 text-red-300 hover:bg-red-800 rounded-md transition-colors">
+                    <button 
+                      onClick={toggleSlider} // Add this line
+                      className="w-full px-4 py-2 border border-red-500 text-red-300 hover:bg-red-800 rounded-md transition-colors"
+                    >
                       Create Account
                     </button>
                   </Link>
@@ -260,7 +317,13 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-6">
-            {/* Mobile Menu */}
+            {/* Mobile Wishlist and Cart Icons - Visible only on mobile */}
+            <div className="flex lg:hidden items-center gap-2">
+              <WishlistIcon />
+              <CartIcon />
+            </div>
+
+            {/* Mobile Menu Button */}
             <button
               onClick={toggleSlider}
               className="lg:hidden p-3 bg-gradient-to-r from-red-600 to-red-800 text-white hover:from-red-700 hover:to-red-900 rounded-full transition-colors shadow-lg"
@@ -304,24 +367,7 @@ export default function Header() {
               {/* Cart and Wishlist Icons - Moved to be after navigation */}
               <div className="flex items-center gap-4 border-l border-red-200 pl-4">
                 <WishlistIcon />
-                
-                {/* Add to Cart Icon */}
-                <Link to="/cart" className="relative group">
-                  <button className="p-3 text-black cursor-pointer">
-                    <div className="relative">
-                      <ShoppingCart className="h-6 w-6" />
-                    </div>
-                    {cartCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-red-800 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
-                        {cartCount}
-                      </span>
-                    )}
-                  </button>
-                  <span className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 whitespace-nowrap border border-red-600 bg-white px-3 py-2 text-sm text-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-200 cursor-text shadow-lg"
-                    style={{ zIndex: 100 }}>
-                    My Cart
-                  </span>
-                </Link>
+                <CartIcon />
               </div>
 
               {/* User Authentication */}

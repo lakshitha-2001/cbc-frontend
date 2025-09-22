@@ -156,7 +156,7 @@ export default function WishlistPage() {
           <p className="text-gray-500 mb-8">Start adding items you love to your wishlist</p>
           <Link
             to="/products"
-            className="inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-md transition-colors"
+            className="inline-flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-6 py-3 transition-colors"
           >
             <ShoppingBag className="h-5 w-5" />
             Continue Shopping
