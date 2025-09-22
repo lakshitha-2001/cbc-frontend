@@ -1,16 +1,51 @@
 // pages/wishlist.jsx
 "use client"
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Trash2, ShoppingBag, Heart, ShoppingCart, ArrowRight } from "lucide-react";
-import ProductCard from "../components/productCard";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { getWishlist, removeFromWishlist, addToCart } from "../utils/wishlistFunctions";
-import { toast } from "react-toastify";
 
 export default function WishlistPage() {
+  const navigate = useNavigate();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Custom confirmation function
+  const confirmAction = (message, onConfirm) => {
+    toast.info(
+      <div>
+        <p className="font-semibold mb-3 text-center">{message}</p>
+        <div className="flex gap-3 justify-center mt-2">
+          <button
+            onClick={() => {
+              toast.dismiss();
+              onConfirm();
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 text-sm font-medium transition-colors"
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 text-sm font-medium transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>,
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        closeButton: false,
+        className: "min-w-64"
+      }
+    );
+  };
 
   useEffect(() => {
     const loadWishlist = () => {
@@ -40,13 +75,13 @@ export default function WishlistPage() {
   };
 
   const handleClearWishlist = () => {
-    if (window.confirm("Are you sure you want to clear your wishlist?")) {
+    confirmAction("Are you sure you want to clear your wishlist?", () => {
       setIsUpdating(true);
       localStorage.removeItem('wishlist');
       window.dispatchEvent(new Event('wishlistUpdated'));
       toast.success("Wishlist cleared!");
       setIsUpdating(false);
-    }
+    });
   };
 
   const handleMoveToCart = (product) => {
@@ -56,11 +91,17 @@ export default function WishlistPage() {
     // Remove from wishlist
     removeFromWishlist(product.productId || product._id || product.id);
     toast.success("Moved to cart!");
+    
+    // Redirect to cart page after a brief delay
+    setTimeout(() => {
+      navigate('/cart');
+    }, 1000);
+    
     setIsUpdating(false);
   };
 
   const handleMoveAllToCart = () => {
-    if (window.confirm("Move all items to cart?")) {
+    confirmAction("Move all items to cart?", () => {
       setIsUpdating(true);
       wishlistItems.forEach(product => {
         addToCart(product);
@@ -69,8 +110,12 @@ export default function WishlistPage() {
       window.dispatchEvent(new Event('wishlistUpdated'));
       window.dispatchEvent(new Event('cartUpdated'));
       toast.success("All items moved to cart!");
-      setIsUpdating(false);
-    }
+      
+      // Redirect to cart page after a brief delay
+      setTimeout(() => {
+        navigate('/cart');
+      }, 1000);
+    });
   };
 
   const getWishlistTotal = () => {
@@ -97,8 +142,10 @@ export default function WishlistPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <ToastContainer />
+      
       <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-        <Heart className="h-8 w-8 text-pink-500 fill-pink-500" />
+        <Heart className="h-8 w-8 text-pink-700 fill-pink-700" />
         My Wishlist
       </h1>
       
@@ -109,7 +156,7 @@ export default function WishlistPage() {
           <p className="text-gray-500 mb-8">Start adding items you love to your wishlist</p>
           <Link
             to="/products"
-            className="inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 transition-colors"
+            className="inline-flex items-center gap-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-md transition-colors"
           >
             <ShoppingBag className="h-5 w-5" />
             Continue Shopping
@@ -220,7 +267,7 @@ export default function WishlistPage() {
             
             <button 
               onClick={handleMoveAllToCart}
-              className="w-full bg-black hover:bg-gray-800 text-white py-3 px-6 font-medium mt-6 transition flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full bg-black hover:bg-gray-900 cursor-pointer text-white py-3 px-6 font-medium mt-6 transition flex items-center justify-center gap-2 disabled:opacity-50"
               disabled={isUpdating || wishlistItems.length === 0}
             >
               <ShoppingCart className="h-5 w-5" />
@@ -229,11 +276,12 @@ export default function WishlistPage() {
             
             <Link to="/cart">
               <button 
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white py-3 px-6 font-medium mt-4 transition flex items-center justify-center gap-2"
-              >
-                Go to Cart
-                <ArrowRight className="h-5 w-5" />
-              </button>
+              className="group w-full bg-white text-black border-2 py-3 px-6 cursor-pointer font-medium mt-4 transition flex items-center justify-center gap-2"
+            >
+              Go to Cart
+              <ArrowRight className="h-5 w-5 transform transition-transform duration-300 group-hover:translate-x-2" />
+            </button>
+
             </Link>
             
             <div className="mt-4 text-sm text-gray-500">

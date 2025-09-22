@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { GrGoogle } from 'react-icons/gr';
+import { FcGoogle } from "react-icons/fc";
 import { useNavigate, Link } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { toast } from 'react-toastify';
 import { useGoogleLogin } from '@react-oauth/google';
-
 
 export default function LoginPage() {
   const [mail, setMail] = useState('');
@@ -40,7 +39,6 @@ export default function LoginPage() {
 
         toast.success('Google login successful');
         
-        // Navigate based on role
         if (decoded.role === 'admin') {
           navigate('/admin');
         } else {
@@ -70,7 +68,6 @@ export default function LoginPage() {
     }
 
     setIsLoading(true);
-    console.log('Login attempt', { mail, backendUrl: import.meta.env.VITE_BACKEND_URL });
 
     try {
       const response = await axios.post(
@@ -88,11 +85,8 @@ export default function LoginPage() {
 
       const { token } = response.data;
 
-      // Decode token
       const decoded = jwtDecode(token);
-      console.log('Decoded Token:', decoded);
 
-      // Store user info
       localStorage.setItem('token', token);
       window.dispatchEvent(new Event('authChange'));
       localStorage.setItem('role', decoded.role);
@@ -104,7 +98,6 @@ export default function LoginPage() {
 
       toast.success('Login successful');
 
-      // Navigate based on role
       if (decoded.role === 'admin') {
         navigate('/admin');
       } else {
@@ -123,13 +116,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[url('login.jpg')] bg-center bg-cover flex flex-col lg:flex-row items-center justify-center p-4">
+    <div className="w-full min-h-screen bg-[url('/login.jpg')] bg-center bg-cover flex flex-col lg:flex-row items-center justify-center p-4">
       {/* Left side - hidden on mobile */}
       <div className="hidden lg:block lg:w-[50%] h-full"></div>
 
-      {/* Right side - full width on mobile */}
+      {/* Right side - responsive */}
       <div className="w-full lg:w-[50%] h-full flex justify-center items-center">
-        <div className="w-full max-w-[500px] min-h-[500px] backdrop-blur-md rounded-md shadow-lg flex flex-col justify-center items-center p-6 md:p-8 bg-white/5">
+        <div className="w-full max-w-[500px] min-h-[500px] md:min-h-[600px] backdrop-blur-md rounded-md shadow-lg flex flex-col justify-center items-center p-6 md:p-8 bg-white/5">
           <h2 className="text-3xl font-bold text-white mb-6">Login</h2>
 
           <div className="w-full space-y-4">
@@ -153,9 +146,12 @@ export default function LoginPage() {
 
             <button
               onClick={handleLogin}
-              className={`w-full h-[50px] rounded-md text-white transition ${
-                isLoading ? 'bg-pink-400 cursor-not-allowed' : 'bg-pink-500 hover:bg-pink-600'
-              }`}
+              className={`w-full h-[50px] rounded-md text-white transition
+                ${
+                  isLoading
+                    ? 'bg-gradient-to-r from-red-400 to-gray-600 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-red-600 to-black cursor-pointer hover:text-gray-200'
+                }`}
               disabled={isLoading || isGoogleLoading}
             >
               {isLoading ? 'Logging in...' : 'Login'}
@@ -167,14 +163,14 @@ export default function LoginPage() {
               <div className="flex-grow border-t border-gray-300"></div>
             </div>
 
-            <button 
+            <button
               onClick={() => googleLogin()}
-              className={`w-full h-[50px] rounded-md text-white transition flex items-center justify-center ${
-                isGoogleLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'
+              className={`w-full h-[50px] rounded-md border border-gray-300 bg-white text-gray-700 transition flex items-center justify-center ${
+                isGoogleLoading ? 'cursor-not-allowed opacity-70' : 'hover:bg-gray-200 cursor-pointer'
               }`}
               disabled={isGoogleLoading || isLoading}
             >
-              <GrGoogle className="text-xl mr-2" />
+              <FcGoogle className="text-2xl mr-2" />
               {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
             </button>
           </div>

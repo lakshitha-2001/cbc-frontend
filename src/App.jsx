@@ -13,7 +13,9 @@ import About from './pages/AboutUs';
 import Contact from './pages/contact';
 import WishlistPage from './pages/wishlist';
 import ForgetPasswordPage from './pages/forgetPassword';
-
+import OrderConfirmation from './client/OrderConfirmation';
+import UnavailablePage from './pages/UnavailablePage';
+ // Import the OrderConfirmation component
 
 // Component to handle conditional layout
 function AppLayout() {
@@ -38,16 +40,19 @@ function AppLayout() {
       
       <main className="flex-grow">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="*" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/products" element={<ProductPage />} />
           <Route path="/about" element={<About />} />  
           <Route path="/contact" element={<Contact />} />  
           <Route path="/wishlist" element={<WishlistPage/>} />
-          <Route path="/*" element={<Home />} />
+          <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} /> {/* Add this line */}
           <Route path="/forgot-password" element={<ForgetPasswordPage />} />
           <Route path="/admin/*" element={<AdminHomePage />} />
+          <Route path="/*" element={<Home />} />
+          <Route path="/profile" element={<UnavailablePage />} />
+          <Route path="/orders" element={<UnavailablePage />} />
         </Routes>
       </main>
       

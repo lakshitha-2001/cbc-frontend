@@ -36,6 +36,10 @@ import AdminOrdersPage from "./admin/adminOrderPage"
 import AdminSlidersPage from "./admin/adminSlidersPage"
 import AddSliderForm from "./admin/addSliderForm"
 import EditSliderForm from "./admin/editSliderForm"
+import AddCustomerForm from "./admin/addCustomerForm"
+import AdminCustomersPage from "./admin/adminCustomersPage"
+import EditCustomerForm from "./admin/editCustomerForm"
+import ViewCustomerPage from "./admin/viewCustomerPage"
 
 export default function AdminHomePage() {
   const [user, setUser] = useState(null)
@@ -213,12 +217,15 @@ export default function AdminHomePage() {
             <Route path="/products/addProduct" element={<AddProductForm />} />
             <Route path="/products/editProduct" element={<EditProductForm />} />
             <Route path="/orders" element={<AdminOrdersPage />} />
-            <Route path="/customers" element={<CustomersPlaceholder />} />
             <Route path="*" element={<NotFoundPage />} />
             <Route path="/sliders" element={<AdminSlidersPage />} />
             <Route path="/sliders/add" element={<AddSliderForm />} />
             <Route path="/sliders/edit/:sliderId" element={<EditSliderForm />} />
-          </Routes>
+            <Route path="/customers" element={<AdminCustomersPage />} />
+            <Route path="/customers/add" element={<AddCustomerForm />} />
+            <Route path="/customers/edit/:id" element={<EditCustomerForm />} />
+            <Route path="/customers/view/:id" element={<ViewCustomerPage />} />
+                      </Routes>
             ) : (
               <div className="w-full h-full flex justify-center items-center">
                 <div className="text-center">

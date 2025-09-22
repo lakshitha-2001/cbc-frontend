@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import axios from 'axios';
-
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -42,7 +41,6 @@ export default function RegisterPage() {
         },
         {
           headers: {
-            // Explicitly ensure no Authorization header is sent for registration
             Authorization: undefined,
           },
         }
@@ -62,11 +60,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="w-full h-screen bg-[url('/login.jpg')] bg-center bg-cover flex items-center justify-center">
-      <div className="w-[50%] h-full"></div>
+    <div className="w-full min-h-screen bg-[url('/login.jpg')] bg-center bg-cover flex flex-col lg:flex-row items-center justify-center p-4">
+      {/* Left side hidden on mobile */}
+      <div className="hidden lg:block lg:w-[50%] h-full"></div>
 
-      <div className="w-[50%] h-full flex justify-center items-center">
-        <div className="w-[500px] h-[700px] backdrop-blur-md rounded-md shadow-lg flex flex-col justify-center items-center p-8 bg-white/5">
+      {/* Right side responsive */}
+      <div className="w-full lg:w-[50%] h-full flex justify-center items-center">
+        <div className="w-full max-w-[500px] min-h-[500px] md:h-[700px] backdrop-blur-md rounded-md shadow-lg flex flex-col justify-center items-center p-6 md:p-8 bg-white/5">
           
           {/* Heading */}
           <h2 className="text-3xl font-bold text-white mb-6">Register</h2>
@@ -110,7 +110,7 @@ export default function RegisterPage() {
           {/* Register Button */}
           <button
             onClick={handleRegister}
-            className="w-full h-[50px] bg-pink-500 text-white rounded-md hover:bg-pink-600 transition cursor-pointer"
+            className="w-full h-[50px] bg-gradient-to-r from-red-600 to-black text-white rounded-md transition cursor-pointer hover:text-gray-200"
           >
             Register
           </button>

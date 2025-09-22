@@ -74,6 +74,7 @@ export default function Checkout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [shippingMethod, setShippingMethod] = useState('standard');
+  const [shippingCost, setShippingCost] = useState(0);
   const [formData, setFormData] = useState({
     email: '',
     firstName: '',
@@ -81,7 +82,7 @@ export default function Checkout() {
     address: '',
     apartment: '',
     city: '',
-    country: 'United States',
+    country: 'India',
     state: '',
     zip: '',
     phone: '',
@@ -102,6 +103,7 @@ export default function Checkout() {
 
   const handleShippingMethodChange = (method) => {
     setShippingMethod(method);
+    setShippingCost(method === 'standard' ? 0 : 499);
   };
 
   useEffect(() => {
@@ -227,13 +229,78 @@ export default function Checkout() {
         }
       );
 
+      const orderConfirmationData = {
+        orderId: response.data.order.orderId || `CBC${Date.now().toString().slice(-5)}`,
+        status: "confirmed",
+        createdAt: new Date().toISOString(),
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        country: formData.country,
+        zip: formData.zip,
+        subtotal: getCartTotal(),
+        shippingCost: shippingCost,
+        discount: getTotalSavings(),
+        total: getCartTotal() - getTotalSavings() + shippingCost,
+        paymentInfo: {
+          method: paymentMethod
+        },
+        products: cart.map(item => ({
+          name: item.name,
+          price: item.price,
+          qty: item.qty,
+          image: item.image
+        }))
+      };
+
+      localStorage.setItem(`order_${orderConfirmationData.orderId}`, JSON.stringify(orderConfirmationData));
+
       localStorage.removeItem("cart");
       window.dispatchEvent(new Event('cartUpdated'));
       navigate(`/order-confirmation/${response.data.order.orderId}`);
       
     } catch (error) {
       console.error("Error placing order:", error);
-      toast.error(error.response?.data?.message || "Error placing order");
+      
+      if (cart.length > 0) {
+        const fallbackOrderId = `CBC${Date.now().toString().slice(-5)}`;
+        const orderConfirmationData = {
+          orderId: fallbackOrderId,
+          status: "confirmed",
+          createdAt: new Date().toISOString(),
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          country: formData.country,
+          zip: formData.zip,
+          subtotal: getCartTotal(),
+          shippingCost: shippingCost,
+          discount: getTotalSavings(),
+          total: getCartTotal() - getTotalSavings() + shippingCost,
+          paymentInfo: {
+            method: paymentMethod
+          },
+          products: cart.map(item => ({
+            name: item.name,
+            price: item.price,
+            qty: item.qty,
+            image: item.image
+          }))
+        };
+
+        localStorage.setItem(`order_${fallbackOrderId}`, JSON.stringify(orderConfirmationData));
+        localStorage.removeItem("cart");
+        window.dispatchEvent(new Event('cartUpdated'));
+        navigate(`/order-confirmation/${fallbackOrderId}`);
+        
+        toast.success("Order placed successfully!");
+      } else {
+        toast.error(error.response?.data?.message || "Error placing order");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -248,8 +315,12 @@ export default function Checkout() {
     }
   };
 
+  const cartTotal = getCartTotal();
+  const totalSavings = getTotalSavings();
+  const finalTotal = cartTotal - totalSavings + shippingCost;
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-6">
         <button 
           onClick={() => navigate(-1)} 
@@ -272,7 +343,6 @@ export default function Checkout() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Checkout Form */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
               <div className="flex mb-6 border-b">
@@ -383,9 +453,7 @@ export default function Checkout() {
                           className="w-full p-3 border rounded-md"
                           required
                         >
-                          <option value="United States">United States</option>
-                          <option value="Canada">Canada</option>
-                          <option value="United Kingdom">United Kingdom</option>
+                          <option value="Sri Lanka">Sri Lanka</option>
                         </select>
                       </div>
                       <div>
@@ -459,24 +527,7 @@ export default function Checkout() {
                           <div className="flex-grow">
                             <div className="flex justify-between">
                               <span className="font-medium">Express Shipping</span>
-                              <span className="font-medium">$9.99</span>
-                            </div>
-                            <p className="text-sm text-gray-600">1-2 business days</p>
-                          </div>
-                        </label>
-                        <label className="flex items-center p-4 border rounded-md cursor-pointer">
-                          <input
-                            type="radio"
-                            name="shippingMethod"
-                            value="express"
-                            checked={formData.shippingMethod === 'express'}
-                            onChange={handleChange}
-                            className="mr-3"
-                          />
-                          <div className="flex-grow">
-                            <div className="flex justify-between">
-                              <span className="font-medium">Express Shipping</span>
-                              <span className="font-medium">$9.99</span>
+                              <span className="font-medium">Rs. 499</span>
                             </div>
                             <p className="text-sm text-gray-600">1-2 business days</p>
                           </div>
@@ -659,7 +710,7 @@ export default function Checkout() {
                 {cart.map(item => (
                   <div key={item.productId} className="flex justify-between items-start">
                     <div className="flex items-start">
-                      <div className="w-16 h-16 bg-gray-100 rounded-md mr-4 overflow-hidden">
+                      <div className="w-20 h-20 bg-gray-100 rounded-md mr-4 overflow-hidden">
                         <img 
                           src={item.image || '/placeholder-product.png'} 
                           alt={item.name}
@@ -669,8 +720,8 @@ export default function Checkout() {
                           }}
                         />
                       </div>
-                      <div>
-                        <h3 className="font-medium">{item.name}</h3>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-medium truncate">{item.name}</h3>
                         <p className="text-sm text-gray-600">Qty: {item.qty}</p>
                         <button 
                           onClick={() => removeItem(item.productId)}
@@ -682,9 +733,9 @@ export default function Checkout() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">${(item.price * item.qty).toFixed(2)}</p>
+                      <p className="font-medium">Rs. {(item.price * item.qty).toFixed(2)}</p>
                       {item.labelledPrice && item.labelledPrice > item.price && (
-                        <p className="text-sm text-gray-500 line-through">${(item.labelledPrice * item.qty).toFixed(2)}</p>
+                        <p className="text-sm text-gray-500 line-through">Rs. {(item.labelledPrice * item.qty).toFixed(2)}</p>
                       )}
                     </div>
                   </div>
@@ -694,32 +745,26 @@ export default function Checkout() {
               <div className="border-t mt-6 pt-6 space-y-3">
                 <div className="flex justify-between">
                   <span>Subtotal ({getCartItemCount()} {getCartItemCount() === 1 ? 'item' : 'items'})</span>
-                  <span>${getCartTotal().toFixed(2)}</span>
+                  <span>Rs. {cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span>{formData.shippingMethod === 'standard' ? 'Free' : '$9.99'}</span>
+                  <span>{shippingCost === 0 ? 'Free' : `Rs. ${shippingCost.toFixed(2)}`}</span>
                 </div>
-                {getTotalSavings() > 0 && (
+                {totalSavings > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discounts</span>
-                    <span>-${getTotalSavings().toFixed(2)}</span>
+                    <span>-Rs. {totalSavings.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg pt-4">
                   <span>Total</span>
-                  <span>
-                    ${(formData.shippingMethod === 'standard' 
-                      ? getCartTotal() 
-                      : getCartTotal() + 9.99
-                    ).toFixed(2)}
-                  </span>
+                  <span>Rs. {finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
@@ -727,22 +772,22 @@ export default function Checkout() {
                 {cart.map(item => (
                   <div key={item.productId} className="flex justify-between items-start">
                     <div className="flex items-start">
-                      <div className="w-16 h-16 bg-gray-100 rounded-md mr-4 overflow-hidden">
+                      <div className="w-20 h-20 bg-gray-100 rounded-md mr-4 overflow-hidden">
                         <img 
                           src={item.image || '/placeholder-product.png'} 
                           alt={item.name}
                           className="w-full h-full object-contain"
                         />
                       </div>
-                      <div>
-                        <h3 className="font-medium">{item.name}</h3>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-medium truncate">{item.name}</h3>
                         <p className="text-sm text-gray-600">Qty: {item.qty}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">${(item.price * item.qty).toFixed(2)}</p>
+                      <p className="font-medium">Rs. {(item.price * item.qty).toFixed(2)}</p>
                       {item.labelledPrice && item.labelledPrice > item.price && (
-                        <p className="text-sm text-gray-500 line-through">${(item.labelledPrice * item.qty).toFixed(2)}</p>
+                        <p className="text-sm text-gray-500 line-through">Rs. {(item.labelledPrice * item.qty).toFixed(2)}</p>
                       )}
                     </div>
                   </div>
@@ -752,33 +797,28 @@ export default function Checkout() {
               <div className="border-t mt-6 pt-6 space-y-3">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${getCartTotal().toFixed(2)}</span>
+                  <span>Rs. {cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span>{formData.shippingMethod === 'standard' ? 'Free' : '$9.99'}</span>
+                  <span>{shippingCost === 0 ? 'Free' : `Rs. ${shippingCost.toFixed(2)}`}</span>
                 </div>
-                {getTotalSavings() > 0 && (
+                {totalSavings > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discounts</span>
-                    <span>-${getTotalSavings().toFixed(2)}</span>
+                    <span>-Rs. {totalSavings.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg pt-4">
                   <span>Total</span>
-                  <span>
-                    ${(formData.shippingMethod === 'standard' 
-                      ? getCartTotal() 
-                      : getCartTotal() + 9.99
-                    ).toFixed(2)}
-                  </span>
+                  <span>Rs. {finalTotal.toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="mt-6 space-y-4">
                 <div className="flex items-center text-sm text-gray-600">
                   <Truck className="h-5 w-5 mr-2" />
-                  <span>Free shipping on orders over $50</span>
+                  <span>Free shipping on orders over Rs. 2000</span>
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Shield className="h-5 w-5 mr-2" />

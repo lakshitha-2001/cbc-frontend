@@ -175,7 +175,7 @@ export default function ProductCard({ product, showDescription = true, isNewArri
           onClick={handleAddToCart}
           className={`w-full py-4 flex items-center justify-center text-lg font-semibold transition-colors ${
             product.isAvailable
-              ? "bg-gray-900 text-white hover:bg-gray-700 cursor-pointer"
+              ? "bg-gray-950 text-white hover:bg-gray-900 cursor-pointer"
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
           }`}
           disabled={!product.isAvailable}
