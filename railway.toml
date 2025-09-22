@@ -1,0 +1,9 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "npm run start"
+
+[variables]
+VITE_BACKEND_URL = "https://cbc-backend-production-b789.up.railway.app"
+VITE_GOOGLE_CLIENT_ID = "404575977773-p48ptj097bujopqluj55qq56qq1tianl.apps.googleusercontent.com"
